@@ -64,7 +64,7 @@ var UIcontroller=(function(){
             return {
                 type:document.querySelector(DOMstrings.inputType).value,
                 description:document.querySelector(DOMstrings.inputDescription).value,
-                value:document.querySelector(DOMstrings.inputValue).value            
+                value:Number(document.querySelector(DOMstrings.inputValue).value)         
             }
         },
 
@@ -112,18 +112,29 @@ var controller=(function(budgetCtrl,UICtrl){
             }   
         })
     };
+    
+    var updateBudget=function(){
+        //This will be used then for deleting an item.
+        //1. Calculate the budget
+        //2. Return the budget
+        //3. Display the budget on the UI
+        
+    };
 
     var ctrlAddItem=function(){
+        var input,newItem;
         //1. Get the field input data
-        var input=UICtrl.getInput();
-        //2. Add the item to the budget controller
-        var newItem=budgetCtrl.addItem(input.type,input.description,input.value);
-        //3. Add the item to the UI
-        var addListItem=UICtrl.addListItem(newItem,input.type);
-        UICtrl.clearHTMLfields();
-        //4. Calculate the budget
-        //5. Display the budged on the UI
-        console.log('It works');
+        input=UICtrl.getInput();
+        if(input.description!=='' && input.value>0){
+            //2. Add the item to the budget controller
+            newItem=budgetCtrl.addItem(input.type,input.description,input.value);
+            //3. Add the item to the UI
+            var addListItem=UICtrl.addListItem(newItem,input.type);
+            //4. Clear the fields
+            UICtrl.clearHTMLfields();  
+            //5. Calculate and update the budget
+            updateBudget();  
+    }
     };
 
     return {
