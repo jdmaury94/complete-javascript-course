@@ -100,6 +100,17 @@ var budgetController = (function () {
         },
         getData: function () {
             return data;
+        },
+        storeData:function(){
+            localStorage.setItem('data',JSON.stringify(data))
+        },
+        getStoredData:function(){
+            return JSON.parse(localStorage.getItem('data'));
+        },
+        updateData:function(StoredData){
+            data.budget=StoredData.budget;
+            data.percentage=StoredData.percentage;
+            data.totals=StoredData.totals;
         }
     }
 
@@ -193,12 +204,38 @@ var UIcontroller = (function () {
 
         getDOMStrings: function () {
             return DOMstrings;
-        }
+        },
     }
 })();
 
 var controller = (function (budgetCtrl, UICtrl) {
 
+    var loadData=function(){
+        //1. Read data from local storage
+        var storedData=budgetCtrl.getStoredData();
+        if(storedData){
+            //2. Update data object from storedData
+            budgetCtrl.updateData(storedData);
+ 
+            //3. Add incomes and expenses on UI from storedData to budget
+            var incomes=storedData.allItems.inc;
+            var expenses=storedData.allItems.exp;
+            incomes.forEach(function(elem){
+                budgetCtrl.addItem('inc', elem.description, elem.value);
+                UICtrl.addListItem(elem,'inc');
+            });
+            expenses.forEach(function(elem){
+                budgetCtrl.addItem('exp', elem.description, elem.value);
+                UICtrl.addListItem(elem,'exp');
+            })
+
+            //4. Get budget and display it on UI
+            var budget=budgetCtrl.getBudget();
+            UICtrl.displayBudget(budget);
+            //5. Update percentages
+            updatePercentages();
+        }
+    };
 
     var setUpEventListeners = function () {
         var DOM = UICtrl.getDOMStrings();
@@ -212,7 +249,6 @@ var controller = (function (budgetCtrl, UICtrl) {
         document.querySelector('.container').addEventListener('click', ctrlDeleteItem);
         document.querySelector('.add__type').addEventListener('change', UICtrl.changedType)
 
-
     };
 
     var updateBudget = function () {
@@ -223,7 +259,6 @@ var controller = (function (budgetCtrl, UICtrl) {
         var budget = budgetController.getBudget();
         //3. Display the budget on the UI
         UICtrl.displayBudget(budget);
-
     };
 
     var updatePercentages = function () {
@@ -238,6 +273,7 @@ var controller = (function (budgetCtrl, UICtrl) {
 
     var ctrlAddItem = function () {
         var input, newItem;
+
         //1. Get the field input data
         input = UICtrl.getInput();
         if (input.description !== '' && input.value > 0) {
@@ -251,6 +287,9 @@ var controller = (function (budgetCtrl, UICtrl) {
             updateBudget();
             //6. Update percentages
             updatePercentages();
+
+            //7. Add data to localStorage
+            budgetCtrl.storeData();
         }
     };
 
@@ -270,6 +309,10 @@ var controller = (function (budgetCtrl, UICtrl) {
             updateBudget();
             //4. Update percentages
             updatePercentages();
+
+            //5. Update storedDate in localStorage
+            budgetCtrl.storeData();
+
         }
     }
 
@@ -279,6 +322,7 @@ var controller = (function (budgetCtrl, UICtrl) {
             UICtrl.displayMonth();
             UICtrl.displayBudget({ budget: 0, totalInc: 0, totalExp: 0, percentage: -1 });
             setUpEventListeners();
+            loadData();
         }
     }
 
