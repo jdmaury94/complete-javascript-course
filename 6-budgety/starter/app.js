@@ -111,6 +111,18 @@ var budgetController = (function () {
             data.budget=StoredData.budget;
             data.percentage=StoredData.percentage;
             data.totals=StoredData.totals;
+        },
+        deleteStoredData:function(){
+            localStorage.removeItem('data');
+        },
+        deleteAllItems:function(){
+            data.allItems.exp=[];
+            data.allItems.inc=[];
+        },
+        getIDS:function(){
+            var idExp=data.allItems.exp.map(elem=>'exp-'+elem.id);
+            var idInc=data.allItems.inc.map(elem=>'inc-'+elem.id);
+            return idExp.concat(idInc);
         }
     }
 
@@ -247,7 +259,9 @@ var controller = (function (budgetCtrl, UICtrl) {
         })
 
         document.querySelector('.container').addEventListener('click', ctrlDeleteItem);
-        document.querySelector('.add__type').addEventListener('change', UICtrl.changedType)
+        document.querySelector('.add__type').addEventListener('change', UICtrl.changedType);
+        document.querySelector('.add__btn--delete').addEventListener('click', deleteAll)
+
 
     };
 
@@ -315,6 +329,18 @@ var controller = (function (budgetCtrl, UICtrl) {
 
         }
     }
+
+
+
+    var deleteAll=function(){
+        var selectorIds=budgetCtrl.getIDS();
+        selectorIds.forEach(id=>UICtrl.deleteListItem(id));
+        budgetCtrl.deleteAllItems();
+        updateBudget();
+        updatePercentages();
+        budgetCtrl.deleteStoredData();
+    };
+
 
     return {
         init: function () {
